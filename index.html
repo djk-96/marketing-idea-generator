@@ -94,8 +94,7 @@
 </div>
 
 <script>
-
-function generateIdeas() {
+async function generateIdeas() {
 
     const business = document.getElementById("business").value;
     const audience = document.getElementById("audience").value;
@@ -106,48 +105,36 @@ function generateIdeas() {
         return;
     }
 
-    const output = `
-        <h2>Marketing Ideas for ${business}</h2>
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.style.display = "block";
+    resultsDiv.innerHTML = "<p>Generating AI ideas...</p>";
 
-        <div class="section">
-            <h3>📝 Blog Ideas</h3>
-            <ul>
-                <li>10 Common Mistakes ${audience} Make When Choosing a ${business}</li>
-                <li>The Ultimate Guide to ${business} Services</li>
-                <li>How ${business} Can Save Time and Money</li>
-                <li>5 Reasons Customers Love Professional ${business} Services</li>
-                <li>Frequently Asked Questions About ${business}</li>
-            </ul>
-        </div>
+    try {
+        const response = await fetch("/api/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                business,
+                audience,
+                goal
+            })
+        });
 
-        <div class="section">
-            <h3>📱 Social Media Posts</h3>
-            <ul>
-                <li>Before & after transformation showcase</li>
-                <li>Customer success story</li>
-                <li>Behind-the-scenes content</li>
-                <li>Top tips for ${audience}</li>
-                <li>Quick myth-busting video</li>
-            </ul>
-        </div>
+        const data = await response.json();
 
-        <div class="section">
-            <h3>📧 Email Campaign Ideas</h3>
-            <ul>
-                <li>Welcome email series</li>
-                <li>Seasonal promotion campaign</li>
-                <li>Customer referral programme</li>
-                <li>Helpful educational newsletter</li>
-                <li>Exclusive VIP offer</li>
-            </ul>
-        </div>
+        resultsDiv.innerHTML = `
+            <h2>AI Marketing Ideas</h2>
+            <pre style="white-space: pre-wrap;">${data.result}</pre>
+        `;
 
-        <div class="section">
-            <h3>🎯 Goal Focus</h3>
-            <p>Your selected goal is: <strong>${goal}</strong></p>
-            <p>Create campaigns specifically designed to help achieve this objective.</p>
-        </div>
-    `;
+    } catch (error) {
+        resultsDiv.innerHTML = "<p>Error generating ideas.</p>";
+        console.error(error);
+    }
+}
+</script>
 
     document.getElementById("results").innerHTML = output;
     document.getElementById("results").style.display = "block";
