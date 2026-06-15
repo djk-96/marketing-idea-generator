@@ -13,11 +13,7 @@ Business: ${business}
 Audience: ${audience}
 Goal: ${goal}
 
-Return:
-- 5 blog ideas
-- 5 social media ideas
-- 3 email campaign ideas
-- 1 bold creative idea
+Return structured, actionable marketing ideas.
 `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -37,11 +33,14 @@ Return:
 
     const data = await response.json();
 
-    // ✅ SAFE extraction (fixes "undefined")
+    console.log("FULL GROQ RESPONSE:", JSON.stringify(data, null, 2));
+    
     const result =
       data?.choices?.[0]?.message?.content ||
+      data?.choices?.[0]?.text ||
+      data?.message?.content ||
       data?.error?.message ||
-      "No response from AI";
+      JSON.stringify(data);
 
     return res.status(200).json({ result });
 
@@ -49,7 +48,7 @@ Return:
     console.error("Backend error:", error);
 
     return res.status(500).json({
-      result: "Server error occurred",
+      result: "Server error",
       error: error.message
     });
   }
