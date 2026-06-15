@@ -12,6 +12,12 @@ Generate marketing ideas for:
 Business: ${business}
 Audience: ${audience}
 Goal: ${goal}
+
+Return:
+- 5 blog ideas
+- 5 social media ideas
+- 3 email campaign ideas
+- 1 bold creative idea
 `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -22,24 +28,29 @@ Goal: ${goal}
       },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "user", content: prompt }
+        ],
         temperature: 0.9
       })
     });
 
     const data = await response.json();
 
-    if (!data.choices || !data.choices[0]) {
-      console.error("Groq response error:", data);
-      return res.status(500).json({ error: "Invalid AI response", raw: data });
-    }
+    // ✅ SAFE extraction (fixes "undefined")
+    const result =
+      data?.choices?.[0]?.message?.content ||
+      data?.error?.message ||
+      "No response from AI";
 
-    return res.status(200).json({
-      result: data.choices[0].message.content
+    return res.status(200).json({ result });
+
+  } catch (error) {
+    console.error("Backend error:", error);
+
+    return res.status(500).json({
+      result: "Server error occurred",
+      error: error.message
     });
-
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error", details: err.message });
   }
 }
